@@ -1,9 +1,10 @@
 #include"wordlist.h"
-#include<unistd.h>
+
 using namespace std;
 
 /// DEBUG MODEL
 #define DEBUG 1
+
 #if DEBUG == 1
 #define COUT(x) std::cout<<x<<std::endl
 void outputMatrix(){
@@ -76,25 +77,26 @@ int StringtoNum(char *optarg)
     return num;
 }
 
-void loadingWords(){
+void wordList::loadingWords(){
     std::unordered_map<std::string, int> Smap;
-    std::ifstream inFile(wordList::inFileName);
+    std::ifstream inFile(inFileName);
     while(!inFile.eof())
     {
         std::string S;
         inFile>>S;
-        auto Svector = wordList::filter(S);
+        auto Svector = filter(S);
         for(auto it = Svector.begin(); it != Svector.end(); it++){
             auto s = *it;
             if(Smap.count(s) == 0){
                 Smap[s] = 1;
                 COUT(s);
-                wordList::wordMatrix.incCount(s);
-                wordList::wordMatrix.pushWord(s);
+                wordMatrix.incCount(s);
+                wordMatrix.pushWord(s);
             }          
         }
     }
     outputMatrix();
+    inFile.close();
 }
 
 void cmdParametersParser(int argc, char **argv){
@@ -149,10 +151,83 @@ void cmdParametersParser(int argc, char **argv){
     else (maxCharLen) ;
 }
 
+void wordList::DFS(int deep, char begin){
+/*Deep First Search:
+branches range from 'a' to 'z'
+pay attention that a branch means an end letter of a word in graph. 
+When you choose a branch, that means you choose a cell of wordMatrix[last branch][new branch]
+Then, we can check the estimatedMax for branch cutting off.*/
+
+/* Parameters:
+deep: it doesn't take the vertex decided in this layer into acount, so wordlist length == deep + 1
+begin: it is decided by last layer(the end of last word)
+*/
+    for(char i='a'; i<='z'; i++){
+        /// choose a branch i
+        if(wordMatrix.count(begin, i) == 0)
+            continue;
+        if(deep + wordMatrix.estimatedMax(begin, i) > maxLength){
+            /// pass branch cutting condition
+            wordSides wordsides={begin:begin, end:i};
+            /// record list
+            tempMaxWordList.push_back(wordsides);
+
+            wordMatrix.decCount(begin, i);
+            DFS(deep + 1, i);
+            wordMatrix.incCount(begin, i);
+
+            tempMaxWordList.pop_back();
+        }else
+        {
+            // this branch is cutted, but we have to give an estimation.
+            if(wordMatrix.estimatedMax(begin, i) != LIMITED_MAX
+            && deep + wordMatrix.estimatedMax(begin, i) > tempEstimatedMaxLength){
+                tempEstimatedMaxLength = deep + wordMatrix.estimatedMax(begin, i);
+            }
+        } 
+        if(deep == 0){
+            /* variable explaination:
+            tempEstimatedMaxLength: it is only for a list that the beginning word has been
+            decieded. It's a local estimated max value.
+            maxLength: it is a global max value*/ 
+
+            // deep == 0 means it comes back to the first cell(vertex). 
+            // It's time to set estimatedMax of this cell.
+            wordMatrix.setEstimatedMax(begin, i, tempEstimatedMaxLength);
+
+            // initial tempEstimatedMaxLength for next beginning word list
+            tempEstimatedMaxLength = 0;
+
+            tempMaxWordList.clear();
+        }     
+    }
+    if(deep > maxLength){
+        maxLength = deep;
+        tempEstimatedMaxLength = maxLength;
+        maxWordList = tempMaxWordList;
+    }
+}
+
+void wordList::output(){
+    for(auto it=maxWordList.begin(); it!=maxWordList.end(); it++){
+        auto wordsides = *it;
+        auto word = wordMatrix.popWord(wordsides.begin, wordsides.end);
+        cout<<word<<endl;
+    }
+}
+
 int main(int argc,char **argv){
     
-    cmdParametersParser(argc, argv);
-    loadingWords();
+    //cmdParametersParser(argc, argv);
+    wordList::loadingWords();
+    for(int i='a'; i<='z'; i++){
+        // choose a beginning letter, not a beginning word.
+        wordList::DFS(0, i);
+    }
+    COUT(wordList::maxLength);
+    wordList::output();
+    
+    
 
     return 0;
 }

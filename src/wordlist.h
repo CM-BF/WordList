@@ -4,6 +4,7 @@
 #include<unordered_map>
 #include<fstream>
 #include<stdio.h>
+#include<unistd.h>
 
 #define LIMITED_MAX 1000000000
 
@@ -82,9 +83,24 @@ namespace wordList{
 
     };
 
-    CwordMatrix wordMatrix;
-    std::string inFileName = "../data/inFile.txt";
-    std::string outFileName;
-    
+    void loadingWords();
+    void DFS(int, char);
     std::vector<std::string> filter(std::string);
+    void output();
+
+    CwordMatrix wordMatrix;
+    typedef struct {
+        char begin;
+        char end;
+    }wordSides;
+    std::vector<wordSides> maxWordList;
+    std::vector<wordSides> tempMaxWordList;
+    int maxLength = 0;
+    int tempEstimatedMaxLength = 0;
+
+    std::string inFileName = "../data/inFile.txt";
+    std::string outFileName = "../data/outFile.txt";
+    
+    
+    
 }
