@@ -4,6 +4,7 @@
 #include<unordered_map>
 #include<fstream>
 #include<stdio.h>
+#include<algorithm>
 #include<unistd.h>
 
 #define LIMITED_MAX 1000000000
@@ -16,6 +17,13 @@ namespace wordList{
         int estimatedMax;
         std::vector<std::string> array;
     };
+
+    bool WordLens = true;   //find the list with max words or max letters 
+    int  wc_paranum = 0;     //para -w -c
+    bool specWordLens = false;  // para -n
+    bool spechead = false,spectail = false; //para -h -t
+    char head,tail='f';
+    bool Compare(const std::string s1,const std::string s2);
 
     class CwordMatrix{
         private:
@@ -41,6 +49,10 @@ namespace wordList{
 
         int count(char begin, char end){
             return matrix[begin - 'a'][end - 'a'].count;
+        }
+
+        int getsize(char begin,char end){
+            return matrix[begin - 'a'][end - 'a'].array.size();
         }
 
         void incCount(char begin, char end){
@@ -72,7 +84,13 @@ namespace wordList{
         void pushWord(std::string word){
             auto begin = word.at(0);
             auto end = *(word.end()-1);
-            matrix[begin - 'a'][end - 'a'].array.push_back(word);
+            matrix[begin - 'a'][end - 'a'].array.insert(upper_bound(matrix[begin - 'a'][end - 'a'].array.begin(),
+            matrix[begin - 'a'][end - 'a'].array.end(),word,Compare),word);
+        }
+
+        std::string getWord(char begin,char end,int pos){
+            auto word = matrix[begin - 'a'][end - 'a'].array.at(pos);
+            return word;
         }
 
         std::string popWord(char begin, char end){
@@ -81,12 +99,25 @@ namespace wordList{
             return word;
         }
 
-    };
+        int getIncrement(char begin,char end){
+            int pos = matrix[begin - 'a'][end - 'a'].count;
+            std::string word = matrix[begin - 'a'][end - 'a'].array.at(pos);
+            if(WordLens) return 1;
+            else return word.length();
+        }
 
+    };
+    
     void loadingWords();
     void DFS(int, char);
     std::vector<std::string> filter(std::string);
     void output();
+    void outputspecWordList();
+    void DFS_spechead(char);
+    void DFS_specwordlens(int,char);
+
+    void Find_maxWordList();
+    void Find_specWordList();
 
     CwordMatrix wordMatrix;
     typedef struct {
@@ -95,10 +126,15 @@ namespace wordList{
     }wordSides;
     std::vector<wordSides> maxWordList;
     std::vector<wordSides> tempMaxWordList;
+    std::vector<std::vector<wordSides>> specWordLists;
+    std::vector<std::string> tempspecWordList;
     int maxLength = 0;
     int tempEstimatedMaxLength = 0;
+    int specLength = 0;
 
-    std::string inFileName = "../data/inFile.txt";
+
+    std::string FileName;
+    std::string inFileName = "../data/";
     std::string outFileName = "../data/outFile.txt";
     
     
