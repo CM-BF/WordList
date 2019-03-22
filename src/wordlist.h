@@ -5,6 +5,7 @@
 #include<fstream>
 #include<stdio.h>
 #include<algorithm>
+#include<time.h>
 #include<unistd.h>
 
 #define LIMITED_MAX 1000000000
@@ -22,6 +23,7 @@ namespace wordList{
     int  wc_paranum = 0;     //para -w -c
     bool specWordLens = false;  // para -n
     bool spechead = false,spectail = false; //para -h -t
+    bool inputfromscreen = true; //when use cmd,represent para -f
     char head,tail='f';
     bool Compare(const std::string s1,const std::string s2);
 
@@ -31,10 +33,15 @@ namespace wordList{
         
         public:
         CwordMatrix(){
+            Init();
+        }
+
+        void Init(){
             for(int i=0; i<26; i++){
                 for(int j=0; j<26; j++){
                     matrix[i][j].count = 0;
                     matrix[i][j].estimatedMax = LIMITED_MAX;
+                    matrix[i][j].array.clear();
                 }
             }
         }
@@ -113,11 +120,10 @@ namespace wordList{
     std::vector<std::string> filter(std::string);
     void output();
     void outputspecWordList();
-    void DFS_spechead(char);
-    void DFS_specwordlens(int,char);
+    //void DFS_spechead(char);
+    //void DFS_specwordlens(int,char);
 
-    void Find_maxWordList();
-    void Find_specWordList();
+    void Find_WordList();
 
     CwordMatrix wordMatrix;
     typedef struct {
@@ -126,13 +132,16 @@ namespace wordList{
     }wordSides;
     std::vector<wordSides> maxWordList;
     std::vector<wordSides> tempMaxWordList;
-    std::vector<std::vector<wordSides>> specWordLists;
     std::vector<std::string> tempspecWordList;
+    int nlistcount = 0;
     int maxLength = 0;
     int tempEstimatedMaxLength = 0;
     int specLength = 0;
+    int recDeep = 0;
+    //int maxDeep = 7;
+    clock_t begin,end;
 
-
+    std::string result;
     std::string FileName;
     std::string inFileName = "../data/";
     std::string outFileName = "../data/outFile.txt";

@@ -85,52 +85,75 @@ bool wordList::Compare(const std::string s1,const std::string s2)
 
 void wordList::loadingWords(){
     std::unordered_map<std::string, int> Smap;
-    std::ifstream inFile(inFileName+FileName);
-    while(!inFile.eof())
-    {
-        std::string S;
-        inFile>>S;
-        auto Svector = filter(S);
-        for(auto it = Svector.begin(); it != Svector.end(); it++){
-            auto s = *it;
-            if(Smap.count(s) == 0){
-                Smap[s] = 1;
-                COUT(s);
-                wordMatrix.incCount(s);
-                wordMatrix.pushWord(s);
-            }          
+    if(!inputfromscreen){
+        std::ifstream inFile(inFileName+FileName);
+        if(!inFile.is_open()){
+            cout <<"File does not exist"<<endl;
+            exit(0);
         }
+
+
+        while(!inFile.eof())
+        {
+            std::string S;
+            inFile>>S;
+            auto Svector = filter(S);
+            for(auto it = Svector.begin(); it != Svector.end(); it++){
+                auto s = *it;
+                if(Smap.count(s) == 0){
+                    Smap[s] = 1;
+                    COUT(s);
+                    wordMatrix.incCount(s);
+                    wordMatrix.pushWord(s);
+                }          
+            }
+        }
+        inFile.close();
     }
+    else{
+        auto Svector = filter(inFileName);
+            for(auto it = Svector.begin(); it != Svector.end(); it++){
+                auto s = *it;
+                if(Smap.count(s) == 0){
+                    Smap[s] = 1;
+                    COUT(s);
+                    wordMatrix.incCount(s);
+                    wordMatrix.pushWord(s);
+                }          
+            }
+    }
+    
     outputMatrix();
-    inFile.close();
 }
 
 void cmdParametersParser(int argc, char **argv){
     int ch;
 
-    while((ch=getopt(argc,argv,"w:c:h:t:n:"))!=-1)
+    while((ch=getopt(argc,argv,"wch:t:n:f:"))!=-1)
     {
         switch(ch)
         {
-            case 'w':wordList::FileName = optarg;
+            case 'w':
                     wordList::WordLens = true;
                     wordList::wc_paranum ++;
-                    cout << wordList::FileName <<endl;
                     break;
-            case 'c':wordList::FileName = optarg;
+            case 'c':
                     wordList::WordLens = false;
                     wordList::wc_paranum ++;
-                    cout << wordList::FileName <<endl;
                     break;
             case 'h':wordList::head = *optarg;
                     wordList::spechead = true;
-                    cout << wordList::head <<endl;break;
+                    COUT(wordList::head);break;
             case 't':wordList::tail = *optarg;
                     wordList::spectail = true;
-                    cout << wordList::tail <<endl;break;
+                    COUT(wordList::tail);break;
             case 'n':wordList::specWordLens = true;
                     wordList::specLength = StringtoNum(optarg);
-                    cout << wordList::specLength <<endl;
+                    COUT(wordList::specLength);
+                    break;
+            case 'f':wordList::FileName = optarg;
+                    wordList::inputfromscreen = false;
+                    COUT(wordList::FileName);
                     break;
             default:;
         }
@@ -139,12 +162,6 @@ void cmdParametersParser(int argc, char **argv){
 
 }
 
-
-void wordList::DFS_spechead(char begin)
-{
-    if(specWordLens) DFS_specwordlens(0,begin);
-    else DFS(0,begin);
-}
 
 void wordList::DFS(int deep, char begin){
 /*Deep First Search:
@@ -157,9 +174,14 @@ Then, we can check the estimatedMax for branch cutting off.*/
 deep: it doesn't take the vertex decided in this layer into acount, so wordlist length == deep + 1
 begin: it is decided by last layer(the end of last word)
 */
+    end = clock();
+    if(((double)(end-begin)/CLOCKS_PER_SEC)>8.0) return;//when time out,end the search
+
     for(char i='a'; i<='z'; i++){
         /// choose a branch i
-        if(wordMatrix.count(begin, i) == 0)
+        if(wordMatrix.count(begin, i) == 0 )
+            continue;
+        if(specWordLens && recDeep == specLength)
             continue;
         //COUT("complete");
         if(deep + wordMatrix.estimatedMax(begin, i) > maxLength){
@@ -169,9 +191,12 @@ begin: it is decided by last layer(the end of last word)
             tempMaxWordList.push_back(wordsides);
 
             wordMatrix.decCount(begin, i);
+            recDeep++;
+
             DFS(deep + wordMatrix.getIncrement(begin,i), i);
             wordMatrix.incCount(begin, i);
 
+            recDeep--;
             tempMaxWordList.pop_back();
         }else
         {
@@ -198,102 +223,54 @@ begin: it is decided by last layer(the end of last word)
         }     
     }
     if(spectail){
-        if(deep > maxLength && begin==tail){
+        if(recDeep>1 && deep >= maxLength && begin==tail){
         maxLength = deep;
         tempEstimatedMaxLength = maxLength;
         maxWordList = tempMaxWordList;
+        if(specWordLens&& WordLens && recDeep==specLength) outputspecWordList();
         }
     }
     else {
-        if(deep > maxLength){
+        if(recDeep>1 && deep >= maxLength){
         maxLength = deep;
         tempEstimatedMaxLength = maxLength;
         maxWordList = tempMaxWordList;
+        if(specWordLens&& WordLens && recDeep==specLength) outputspecWordList();
         }
     }
-    
-}
-
-void wordList::DFS_specwordlens(int deep,char begin)
-{
-    
-    for(char i='a'; i<='z'; i++){
-        //if(begin=='e') cout << i<<':'<<wordMatrix.estimatedMax(begin, i)<<endl;
-        /// choose a branch i
-        if(wordMatrix.count(begin, i) == 0 || deep == specLength)
-            continue;
-        //COUT("complete");
-        if(deep + wordMatrix.estimatedMax(begin, i) >= specLength){
-            /// pass branch cutting condition
-            
-            wordSides wordsides={begin:begin, end:i};
-            /// record list
-            tempMaxWordList.push_back(wordsides);
-            
-            wordMatrix.decCount(begin, i);
-        
-            DFS_specwordlens(deep + wordMatrix.getIncrement(begin,i), i);
-
-            wordMatrix.incCount(begin, i);
-
-            tempMaxWordList.pop_back();
-        }else
-        {
-            // this branch is cutted, but we have to give an estimation.
-            if(wordMatrix.estimatedMax(begin, i) != LIMITED_MAX
-            && deep + wordMatrix.estimatedMax(begin, i) > tempEstimatedMaxLength){
-                tempEstimatedMaxLength = deep + wordMatrix.estimatedMax(begin, i);
-            }
-        } 
-        if(deep == 0){
-            /* variable explaination:
-            tempEstimatedMaxLength: it is only for a list that the beginning word has been
-            decieded. It's a local estimated max value.
-            maxLength: it is a global max value*/ 
-
-            // deep == 0 means it comes back to the first cell(vertex). 
-            // It's time to set estimatedMax of this cell.
-        
-            wordMatrix.setEstimatedMax(begin, i, tempEstimatedMaxLength);
-
-            // initial tempEstimatedMaxLength for next beginning word list
-            tempEstimatedMaxLength = 0;
-
-            tempMaxWordList.clear();
-        }     
-    }
-    
-        if(spectail){
-            if(begin==tail && deep >= tempEstimatedMaxLength){
-            tempEstimatedMaxLength = deep;
-            maxWordList = tempMaxWordList;
-            if(deep==specLength) specWordLists.push_back(maxWordList);
-            }
-        }
-        else if(deep >= tempEstimatedMaxLength){
-            tempEstimatedMaxLength = deep;
-            maxWordList = tempMaxWordList;
-            if(deep==specLength) specWordLists.push_back(maxWordList);
-        }
     
 }
 
 void wordList::output(){
     int count[26][26] = {0};
+    std::ofstream outFile(outFileName);
+
+    COUT(maxLength);
+    outFile << maxLength <<endl;
+    result += to_string(maxLength) + '\n';
     for(auto it=maxWordList.begin(); it!=maxWordList.end(); it++){
         auto wordsides = *it;
         auto word = wordMatrix.popWord(wordsides.begin, wordsides.end);
-        cout<<word<<endl;
+        COUT(word);
+        outFile << word << endl;
+        result += word + '\n';
     }
-    cout << endl;
+    COUT("");
+    outFile<<endl;
+    outFile.close();
 }
 
-void output_print(int deep,std::vector<wordList::wordSides> tempwordList){
+void output_print(int deep,std::vector<wordList::wordSides> tempwordList,std::ofstream &outFile){
     if(deep == tempwordList.size()){
         for(auto it=wordList::tempspecWordList.begin(); it!=wordList::tempspecWordList.end(); it++){
-            cout<<*it<<endl;
+            COUT(*it);
+            outFile << *it <<endl;
+            wordList::result += *it + '\n';
         }
-        cout << endl;
+        COUT("");
+        outFile <<endl;
+        wordList::result += '\n';
+        wordList::nlistcount++;
         return;
     }
     wordList::wordSides wordsides = tempwordList.at(deep);
@@ -301,38 +278,45 @@ void output_print(int deep,std::vector<wordList::wordSides> tempwordList){
         auto word = wordList::wordMatrix.getWord(wordsides.begin,wordsides.end,i);
 
         wordList::tempspecWordList.push_back(word);
-        output_print(deep + 1,tempwordList);
+        output_print(deep + 1,tempwordList,outFile);
         wordList::tempspecWordList.pop_back();
     }
 }
 
-void wordList::outputspecWordList(){
-    cout << specWordLists.size() <<endl;
-    for(auto it1 = specWordLists.begin();it1!=specWordLists.end();it1++){
-        output_print(0,*it1);
-        cout <<endl;
-    }
+void wordList::outputspecWordList(){ //output all the wordlists with length of n
+    std::ofstream outFile;
+    outFile.open(outFileName,ios::app);
+    output_print(0,maxWordList,outFile);
+    outFile.close();
 }
 
 void HandleException()
 {
-    if(wordList::wc_paranum == 0){
-        std::cout << "no file opened" <<std::endl;
+    if(wordList::wc_paranum == 0 && !wordList::specWordLens){
+        std::cout << "-w or -c or -n must be chooesd " <<std::endl;
         exit(0);
     }
 
-    if(wordList::wc_paranum != 1){
-        std::cout << "parameters conflict" <<std::endl;
+    if(wordList::wc_paranum > 1){
+        std::cout << "Parameters conflict" <<std::endl;
         exit(0);
     }
 
-    if(!wordList::WordLens && wordList::specWordLens){
-        std::cout << "not yet implemented" <<std::endl;
+    if(wordList::inputfromscreen){
+        std::cout <<"No file opened" <<std::endl;
+        exit(0);
+    }
+    if(wordList::wc_paranum == 1 && wordList::WordLens && wordList::specWordLens){
+        std::cout << "-w and -n cannot be choosed together" <<std::endl;
+        exit(0);
+    }
+    if(wordList::specLength <2){
+        std::cout << "Word length should >1" <<std::endl;
         exit(0);
     }
 }
 
-void wordList::Find_maxWordList(){
+void wordList::Find_WordList(){
     if(spechead) DFS(0,head);
     else {
         for(int i='a'; i<='z'; i++){
@@ -340,20 +324,9 @@ void wordList::Find_maxWordList(){
         DFS(0, i);
         }
     }
-    COUT(wordList::maxLength);
-    wordList::output();
-};
-
-void wordList::Find_specWordList(){
-    if(spechead) DFS_specwordlens(0,head);
-    else{
-        for(int i='a'; i<='z'; i++){
-        // choose a beginning letter, not a beginning word.
-        DFS(0, i);
-        }
-    }
-    wordList::outputspecWordList();
+    
 }
+
 
 int main(int argc,char **argv){
     
@@ -361,8 +334,65 @@ int main(int argc,char **argv){
     HandleException();
     wordList::loadingWords();
     
-    if(wordList::specWordLens) wordList::Find_specWordList();
-    else wordList::Find_maxWordList();
+    wordList::begin = clock();
+    wordList::Find_WordList();
+    if(wordList::maxLength < 1){
+        cout << "No wordlists meet the requirements "<<endl;
+        exit(0);
+    }
+    COUT("OK");
+    if(wordList::specWordLens && wordList::WordLens) {
+        std::ofstream outFile;
+        outFile.open(wordList::outFileName,ios::app);
+        outFile.seekp(0,ios::beg);
+        outFile << wordList::nlistcount <<endl;
+        outFile.close();
+    }
+    else wordList::output();
 
     return 0;
+}
+
+void Init()
+{
+    wordList::result = "";
+    wordList::recDeep = 0;
+    wordList::maxLength = 0;
+    wordList::tempEstimatedMaxLength = 0;
+    wordList::maxWordList.clear();
+    wordList::tempMaxWordList.clear();
+    wordList::tempspecWordList.clear();
+    wordList::wordMatrix.Init();
+    wordList::begin = clock();
+}
+
+extern "C"
+{
+    const char* Kana(char* FileName,bool WordLens,bool spechead,char head,
+bool spectail,char tail,bool specWordLens,int Length,bool inputfromscreen){
+
+        cout << FileName <<" "<<WordLens <<" "<<spechead <<" "<<head <<" "<<spectail <<" "
+            <<tail <<" "<<specWordLens <<" "<<Length <<endl;
+        wordList::result = "";
+        
+        wordList::inFileName = FileName;
+        wordList::WordLens = WordLens;
+        wordList::spechead = spechead;
+        wordList::head = head;
+        wordList::tail = tail;
+        wordList::spectail = spectail;
+        wordList::specWordLens = specWordLens;
+        wordList::specLength = Length;
+        wordList::inputfromscreen = inputfromscreen;
+
+        Init();
+        wordList::loadingWords();
+        wordList::Find_WordList();
+
+        if(wordList::specWordLens && wordList::WordLens) wordList::outputspecWordList();
+        else wordList::output();
+        
+        cout << wordList::result <<endl;
+        return wordList::result.c_str();
+    }
 }
