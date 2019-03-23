@@ -89,14 +89,26 @@ void cmdParametersParser(int argc, char **argv){
 
 
 ## 测试用例
-1. -w -f
+其中-f是文件参数，-w，-c和-n必须有一个
+
+1. -w -f（基本测试）
 2. -c -f
-3. -n -f (big scale)
-4. -h -t -f (big scale)
-5. -w -h -t -f
+3. -n -f (big scale， 大数据测试)
+4. -h -t -f (exception， 不存在wcn参数)
+5. -w -h -t -f（三种组合）
 6. -c -h -t -f
 7. -n -h -t -f
-8. -n -c -f
-9. -n -w -f(exception)
-10. -w -c -f(exception)
+8. -n -c -h -t -f（最复杂组合测试）
+9. -n -w -f(exception， 不和谐参数异常)
+10. -w -c -f(exception， 冲突参数)
+
+## 编译环境
+系统：Ubuntu
+语言：python3（内置tkinter，若无需要安装），c++
+
+## gui
+默认为-w参数（当wcn三者都不选时）
+填好参数后点击run即可，会弹出一个小窗口显示结果。
+![img](./gui.png)
+
 
