@@ -70,7 +70,7 @@ int StringtoNum(char *optarg)
             num += optarg[i]-'0';
         }
         else {
-            printf("\n");
+            cout << "The value of -n should be an integer"<<endl;
             exit(0);
         }
     }
@@ -141,18 +141,22 @@ void cmdParametersParser(int argc, char **argv){
                     wordList::WordLens = false;
                     wordList::wc_paranum ++;
                     break;
-            case 'h':wordList::head = *optarg;
+            case 'h':wordList::temp_head = optarg;
                     wordList::spechead = true;
+                    wordList::h_paranum ++;
                     COUT(wordList::head);break;
-            case 't':wordList::tail = *optarg;
+            case 't':wordList::temp_tail = optarg;
                     wordList::spectail = true;
+                    wordList::t_paranum ++;
                     COUT(wordList::tail);break;
             case 'n':wordList::specWordLens = true;
                     wordList::specLength = StringtoNum(optarg);
+                    wordList::n_paranum ++;
                     COUT(wordList::specLength);
                     break;
             case 'f':wordList::FileName = optarg;
                     wordList::inputfromscreen = false;
+                    wordList::f_paranum ++;
                     COUT(wordList::FileName);
                     break;
             default:;
@@ -223,7 +227,7 @@ begin: it is decided by last layer(the end of last word)
         }     
     }
     if(spectail){
-        if(recDeep>1 && deep >= maxLength && begin==tail){
+        if(recDeep>1 && deep >= maxLength && recDeep>= specLength && begin==tail){
         maxLength = deep;
         tempEstimatedMaxLength = maxLength;
         maxWordList = tempMaxWordList;
@@ -231,7 +235,7 @@ begin: it is decided by last layer(the end of last word)
         }
     }
     else {
-        if(recDeep>1 && deep >= maxLength){
+        if(recDeep>1 && recDeep>= specLength && deep >= maxLength){
         maxLength = deep;
         tempEstimatedMaxLength = maxLength;
         maxWordList = tempMaxWordList;
@@ -297,8 +301,9 @@ void HandleException()
         exit(0);
     }
 
-    if(wordList::wc_paranum > 1){
-        std::cout << "Parameters conflict" <<std::endl;
+    if(wordList::wc_paranum > 1||wordList::h_paranum > 1||wordList::t_paranum > 1
+        ||wordList::n_paranum > 1||wordList::f_paranum > 1){
+        std::cout << "The same parameter can occur only once" <<std::endl;
         exit(0);
     }
 
@@ -310,10 +315,20 @@ void HandleException()
         std::cout << "-w and -n cannot be choosed together" <<std::endl;
         exit(0);
     }
-    if(wordList::specLength <2){
+    if(wordList::specWordLens && wordList::specLength <2){
         std::cout << "Word length should >1" <<std::endl;
         exit(0);
     }
+    if(wordList::spechead && (wordList::temp_head.size()!=1 || !isalpha(wordList::temp_head[0]))){
+        std::cout << "The value of -h should be a character"<<std::endl;
+        exit(0);
+    }
+    else if(wordList::spechead) wordList::head = char(wordList::temp_head[0]);
+    if(wordList::spectail && (wordList::temp_tail.size()!=1 || !isalpha(wordList::temp_tail[0]))){
+        std::cout << "The value of -t should be a character"<<std::endl;
+        exit(0);
+    }
+    else if(wordList::spectail) wordList::tail = char(wordList::temp_tail[0]);
 }
 
 void wordList::Find_WordList(){
@@ -340,7 +355,7 @@ int main(int argc,char **argv){
         cout << "No wordlists meet the requirements "<<endl;
         exit(0);
     }
-    COUT("OK");
+
     if(wordList::specWordLens && wordList::WordLens) {
         std::ofstream outFile;
         outFile.open(wordList::outFileName,ios::app);

@@ -6,6 +6,7 @@
 #include<stdio.h>
 #include<algorithm>
 #include<time.h>
+#include<ctype.h>
 #include<unistd.h>
 
 #define LIMITED_MAX 1000000000
@@ -20,11 +21,12 @@ namespace wordList{
     };
 
     bool WordLens = true;   //find the list with max words or max letters 
-    int  wc_paranum = 0;     //para -w -c
+    int  wc_paranum = 0,h_paranum=0,t_paranum =0,n_paranum=0,f_paranum=0;  //counter for each parameter
     bool specWordLens = false;  // para -n
     bool spechead = false,spectail = false; //para -h -t
     bool inputfromscreen = true; //when use cmd,represent para -f
-    char head,tail='f';
+    std::string temp_head,temp_tail;
+    char head,tail;
     bool Compare(const std::string s1,const std::string s2);
 
     class CwordMatrix{
