@@ -251,13 +251,13 @@ void wordList::output(){
 
     COUT(maxLength);
     outFile << maxLength <<endl;
-    result += to_string(maxLength) + '\n';
+    //result += to_string(maxLength) + '\n';
     for(auto it=maxWordList.begin(); it!=maxWordList.end(); it++){
         auto wordsides = *it;
         auto word = wordMatrix.popWord(wordsides.begin, wordsides.end);
         COUT(word);
         outFile << word << endl;
-        result += word + '\n';
+        //result += word + '\n';
     }
     COUT("");
     outFile<<endl;
@@ -269,11 +269,11 @@ void output_print(int deep,std::vector<wordList::wordSides> tempwordList,std::of
         for(auto it=wordList::tempspecWordList.begin(); it!=wordList::tempspecWordList.end(); it++){
             COUT(*it);
             outFile << *it <<endl;
-            wordList::result += *it + '\n';
+            //wordList::result += *it + '\n';
         }
         COUT("");
         outFile <<endl;
-        wordList::result += '\n';
+        //wordList::result += '\n';
         wordList::nlistcount++;
         return;
     }
@@ -367,7 +367,7 @@ int main(int argc,char **argv){
 
     return 0;
 }
-
+/*
 void Init()
 {
     wordList::result = "";
@@ -410,4 +410,4 @@ bool spectail,char tail,bool specWordLens,int Length,bool inputfromscreen){
         cout << wordList::result <<endl;
         return wordList::result.c_str();
     }
-}
+} */
