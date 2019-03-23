@@ -310,7 +310,7 @@ void HandleException()
         std::cout << "-w and -n cannot be choosed together" <<std::endl;
         exit(0);
     }
-    if(wordList::specLength <2){
+    if(wordList::specWordLens && wordList::specLength <2){
         std::cout << "Word length should >1" <<std::endl;
         exit(0);
     }
