@@ -279,11 +279,12 @@ void output_print(int deep,std::vector<wordList::wordSides> tempwordList,std::of
     }
     wordList::wordSides wordsides = tempwordList.at(deep);
     for(int i = 0;i < wordList::wordMatrix.getsize(wordsides.begin,wordsides.end);i++){
-        auto word = wordList::wordMatrix.getWord(wordsides.begin,wordsides.end,i);
-
+        auto word = wordList::wordMatrix.erase(wordsides.begin,wordsides.end,i);
+        
         wordList::tempspecWordList.push_back(word);
         output_print(deep + 1,tempwordList,outFile);
         wordList::tempspecWordList.pop_back();
+        wordList::wordMatrix.insert(wordsides.begin,wordsides.end,word,i);
     }
 }
 
@@ -350,6 +351,14 @@ int main(int argc,char **argv){
     wordList::loadingWords();
     
     wordList::begin = clock();
+
+    if(wordList::specWordLens && wordList::WordLens) {
+        std::ofstream outFile;
+        outFile.open(wordList::outFileName);
+        outFile << "       " <<endl;
+        outFile.close();
+    }
+
     wordList::Find_WordList();
     if(wordList::maxLength < 1){
         cout << "No wordlists meet the requirements "<<endl;
@@ -358,9 +367,10 @@ int main(int argc,char **argv){
 
     if(wordList::specWordLens && wordList::WordLens) {
         std::ofstream outFile;
-        outFile.open(wordList::outFileName,ios::app);
+        outFile.open(wordList::outFileName,ios::in);
         outFile.seekp(0,ios::beg);
-        outFile << wordList::nlistcount <<endl;
+        outFile << wordList::nlistcount;
+        COUT(wordList::nlistcount);
         outFile.close();
     }
     else wordList::output();
@@ -410,4 +420,5 @@ bool spectail,char tail,bool specWordLens,int Length,bool inputfromscreen){
         cout << wordList::result <<endl;
         return wordList::result.c_str();
     }
+<<<<<<< HEAD
 } */

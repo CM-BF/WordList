@@ -115,6 +115,16 @@ namespace wordList{
             else return word.length();
         }
 
+        std::string erase(char begin,char end,int pos){
+            std::string word = matrix[begin - 'a'][end - 'a'].array.at(pos);
+            matrix[begin - 'a'][end - 'a'].array.erase(matrix[begin - 'a'][end - 'a'].array.begin() + pos);
+            return word;
+        }
+
+        void insert(char begin,char end,std::string word,int pos){
+            matrix[begin - 'a'][end - 'a'].array.insert(matrix[begin - 'a'][end - 'a'].array.begin()+pos,word);
+        }
+
     };
     
     void loadingWords();
