@@ -156,7 +156,7 @@ namespace wordList{
     std::string result;
     std::string FileName;
     std::string inFileName = "../data/";
-    std::string outFileName = "../data/outFile.txt";
+    std::string outFileName = "../data/solution.txt";
     
     
     
