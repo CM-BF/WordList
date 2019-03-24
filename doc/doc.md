@@ -235,7 +235,7 @@ begin: it is decided by last layer(the end of last word)
 语言：python3（内置tkinter，若无需要安装），c++
 
 ## gui
-为了能调用c++接口，每次启动命令行，需先将当前目录加入共享库：“export LD_LIBRARY_PATH=./”，或者直接运行lib的wordlist.sh脚本启动程序
+为了能调用c++接口，每次启动命令行，需先将当前目录加入共享库：“export LD_LIBRARY_PATH=./”，或者直接运行GUI/bin目录下的wordlist.sh脚本启动程序
 
 默认为-w参数（当wcn三者都不选时）
 
