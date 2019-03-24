@@ -3,7 +3,7 @@
 using namespace std;
 
 /// DEBUG MODEL
-#define DEBUG 1
+#define DEBUG 0
 
 #if DEBUG == 1
 #define COUT(x) std::cout<<x<<std::endl
