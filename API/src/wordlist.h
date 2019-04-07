@@ -132,9 +132,11 @@ namespace wordList{
     std::vector<std::string> filter(std::string);
     void output();
     void outputspecWordList();
+    void HandleException();
     //new Functions for lab1-2
     extern "C"
     {
+    void text_process(char* filename,char* rawstr);
     int get_chain_word(char* words,std::vector<std::string> &result,char head,char tail);
     int get_chain_char(char* words,std::vector<std::string> &result,char head,char tail);
     int get_chain_spec(char* words,int n,std::vector<std::vector<std::string>> &result,char head,char tail);

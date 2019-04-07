@@ -318,29 +318,8 @@ void wordList::outputspecWordList(){
         result += '\n';
     }
 }
-/*
-void HandleException()
-{
-    if(wordList::wc_paranum == 0 && !wordList::specWordLens){
-        std::cout << "-w or -c or -n must be chooesd " <<std::endl;
-        exit(0);
-    }
 
-    if(wordList::wc_paranum > 1){
-        std::cout << "parameters conflict" <<std::endl;
-        exit(0);
-    }
 
-    if(wordList::inputfromscreen){
-        std::cout <<"no file opened" <<std::endl;
-        exit(0);
-    }
-    if(wordList::wc_paranum == 1 && wordList::WordLens && wordList::specWordLens){
-        std::cout << "-w and -n cannot be choosed together" <<std::endl;
-        exit(0);
-    }
-}
-*/
 void wordList::Find_WordList(){
     if(spechead) DFS(0,head);
     else {
@@ -394,6 +373,38 @@ void Init()
     wordList::begin = clock();
 }
 
+
+void wordList::HandleException()
+{
+    if(spechead && !isalpha(head)){
+        throw "";
+    }
+    if(spectail && !isalpha(tail)){
+        throw "";
+    }
+}
+
+
+void wordList::text_process(char* filename,const char* rawstr)
+{   
+    string s = "";
+    string tempstr;
+    ifstream inFile(filename);
+    try{
+        if(!inFile.is_open())
+        throw "File does not exist";
+    }
+    catch(const char* msg){
+        cerr << msg <<endl;
+        exit(1);
+    }
+    while(!inFile.eof()){
+        inFile >> tempstr;
+        s += tempstr;
+    }
+    rawstr = s.c_str();
+    inFile.close();
+}
 
 int wordList::get_chain_word(char* words,vector<string> &result,char head,char tail)
 {
