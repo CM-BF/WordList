@@ -1,7 +1,6 @@
 #include"wordlist.h"
 
 using namespace std;
-
 /// DEBUG MODEL
 #define DEBUG 0
 
@@ -32,6 +31,35 @@ void outputMatrix(){
 void outputMatrix(){}
 #endif
 
+
+bool wordList::WordLens = true;   //find the list with max words or max letters 
+int  wordList::wc_paranum = 0;     //para -w -c
+bool wordList::specWordLens = false;  // para -n
+bool wordList::spechead = false,wordList::spectail = false; //para -h -t
+bool wordList::inputfromscreen = false; //when use cmd,represent para -f
+char wordList::head,wordList::tail;
+
+wordList::CwordMatrix wordList::wordMatrix;
+
+vector<wordList::wordSides> wordList::maxWordList;
+vector<wordList::wordSides> wordList::tempMaxWordList;
+vector<vector<wordList::wordSides>> wordList::specWordLists;
+vector<string> wordList::tempspecWordList;
+int wordList::maxLength = 0;
+int wordList::tempEstimatedMaxLength = 0;
+int wordList::specLength = 0;
+int wordList::recDeep = 0;
+clock_t wordList::begin,wordList::end;
+    //new variables for lab1-2
+    //vectors that save return value 
+vector<string> wordList::maxWordList_api;
+vector<vector<string>> wordList::specWordLists_api;
+
+string wordList::result;
+string wordList::FileName;
+string wordList::inFileName = "../data/";
+string wordList::outFileName = "../data/outFile.txt";
+
 bool inRange(char c){
     if((c>='a' && c<='z') || (c>='A' && c<='Z'))
         return true;
@@ -59,7 +87,7 @@ std::vector<std::string> wordList::filter(std::string S){
     }
     return vec;
 }
-
+/*
 int StringtoNum(char *optarg)
 {
     int num = 0;
@@ -76,7 +104,7 @@ int StringtoNum(char *optarg)
     }
     return num;
 }
-
+*/
 bool wordList::Compare(const std::string s1,const std::string s2)
 {
     return s1.length() > s2.length();
@@ -85,7 +113,7 @@ bool wordList::Compare(const std::string s1,const std::string s2)
 
 void wordList::loadingWords(){
     std::unordered_map<std::string, int> Smap;
-    if(!inputfromscreen){
+    /*if(!inputfromscreen){
         std::ifstream inFile(inFileName);
         while(!inFile.eof())
         {
@@ -104,7 +132,7 @@ void wordList::loadingWords(){
         }
         inFile.close();
     }
-    else{
+    else{*/
         auto Svector = filter(inFileName);
             for(auto it = Svector.begin(); it != Svector.end(); it++){
                 auto s = *it;
@@ -115,11 +143,11 @@ void wordList::loadingWords(){
                     wordMatrix.pushWord(s);
                 }          
             }
-    }
+    //}
     
     outputMatrix();
 }
-
+/*
 void cmdParametersParser(int argc, char **argv){
     int ch;
 
@@ -155,13 +183,7 @@ void cmdParametersParser(int argc, char **argv){
     }
 
 }
-
-/*
-void wordList::DFS_spechead(char begin)
-{
-    if(specWordLens) DFS_specwordlens(0,begin);
-    else DFS(0,begin);
-}*/
+*/
 
 void wordList::DFS(int deep, char begin){
 /*Deep First Search:
@@ -248,6 +270,7 @@ void wordList::output(){
     for(auto it=maxWordList.begin(); it!=maxWordList.end(); it++){
         auto wordsides = *it;
         auto word = wordMatrix.popWord(wordsides.begin, wordsides.end);
+        maxWordList_api.push_back(word);
         COUT(word);
         result += word + '\n';
     }
@@ -261,6 +284,7 @@ void output_print(int deep,std::vector<wordList::wordSides> tempwordList){
             wordList::result += *it + '\n';
         }
         wordList::result += '\n';
+        wordList::specWordLists_api.push_back(wordList::tempspecWordList);
         return;
     }
     wordList::wordSides wordsides = tempwordList.at(deep);
@@ -294,7 +318,7 @@ void wordList::outputspecWordList(){
         result += '\n';
     }
 }
-
+/*
 void HandleException()
 {
     if(wordList::wc_paranum == 0 && !wordList::specWordLens){
@@ -316,7 +340,7 @@ void HandleException()
         exit(0);
     }
 }
-
+*/
 void wordList::Find_WordList(){
     if(spechead) DFS(0,head);
     else {
@@ -339,6 +363,7 @@ void wordList::Find_specWordList(){
     wordList::outputspecWordList();
 }*/
 
+/*
 int main(int argc,char **argv){
     
     cmdParametersParser(argc, argv);
@@ -352,7 +377,7 @@ int main(int argc,char **argv){
 
     return 0;
 }
-
+*/
 void Init()
 {
     wordList::result = "";
@@ -363,14 +388,99 @@ void Init()
     wordList::tempMaxWordList.clear();
     wordList::specWordLists.clear();
     wordList::tempspecWordList.clear();
+    wordList::maxWordList_api.clear();
+    wordList::specWordLists_api.clear();
     wordList::wordMatrix.Init();
     wordList::begin = clock();
 }
 
+
+int wordList::get_chain_word(char* words,vector<string> &result,char head,char tail)
+{
+    inFileName = words;
+    WordLens = true;
+    specWordLens = false;
+    inputfromscreen = true;
+    if(head!='\0'){
+        spechead = true;
+        wordList::head = head;
+    }
+    else spechead = false;
+    if(tail!='\0'){
+        spectail = true;
+        wordList::tail = tail;
+    }
+    else spectail = false;
+
+    Init();
+    wordList::loadingWords();
+    wordList::Find_WordList();
+    wordList::output();
+
+    for(auto it = maxWordList_api.begin();it != maxWordList_api.end();it++)
+        result.push_back(*it);
+    return maxLength;
+}
+
+int wordList::get_chain_char(char* words,vector<string> &result,char head,char tail)
+{
+    inFileName = words;
+    WordLens = false;
+    specWordLens = false;
+    inputfromscreen = true;
+    if(head!='\0'){
+        spechead = true;
+        wordList::head = head;
+    }
+    else spechead = false;
+    if(tail!='\0'){
+        spectail = true;
+        wordList::tail = tail;
+    }
+    else spectail = false;
+
+    Init();
+    wordList::loadingWords();
+    wordList::Find_WordList();
+    wordList::output();
+
+    for(auto it = maxWordList_api.begin();it != maxWordList_api.end();it++)
+        result.push_back(*it);
+    return maxLength;
+}
+
+int wordList::get_chain_spec(char* words,int n,vector<vector<string>> &result,char head,char tail)
+{
+    inFileName = words;
+    WordLens = true;
+    specWordLens = true;
+    specLength = n;
+    inputfromscreen = true;
+    if(head!='\0'){
+        spechead = true;
+        wordList::head = head;
+    }
+    else spechead = false;
+    if(tail!='\0'){
+        spectail = true;
+        wordList::tail = tail;
+    }
+    else spectail = false;
+
+    Init();
+    wordList::loadingWords();
+    wordList::Find_WordList();
+    wordList::outputspecWordList();
+
+    for(auto it = specWordLists_api.begin();it != specWordLists_api.end();it++)
+        result.push_back(*it);
+    return result.size();
+}
+/*
 extern "C"
 {
-    const char* Kana(char* FileName,bool WordLens,bool spechead,char head,
-bool spectail,char tail,bool specWordLens,int Length,bool inputfromscreen){
+const char* Kana(char* FileName,bool WordLens,bool spechead,char head,
+    bool spectail,char tail,bool specWordLens,int Length,bool inputfromscreen){
 
         
         wordList::inFileName = FileName;
@@ -392,4 +502,4 @@ bool spectail,char tail,bool specWordLens,int Length,bool inputfromscreen){
         COUT(wordList::result);
         return wordList::result.c_str();
     }
-}
+}*/

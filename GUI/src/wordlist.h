@@ -10,6 +10,8 @@
 
 #define LIMITED_MAX 1000000000
 
+#ifndef __WORDLIST_H__
+#define __WORDLIST_H__
 
 namespace wordList{
 
@@ -19,12 +21,12 @@ namespace wordList{
         std::vector<std::string> array;
     };
 
-    bool WordLens = true;   //find the list with max words or max letters 
-    int  wc_paranum = 0;     //para -w -c
-    bool specWordLens = false;  // para -n
-    bool spechead = false,spectail = false; //para -h -t
-    bool inputfromscreen = false; //when use cmd,represent para -f
-    char head,tail='f';
+    extern bool WordLens;   //find the list with max words or max letters 
+    extern int  wc_paranum;     //para -w -c
+    extern bool specWordLens;  // para -n
+    extern bool spechead ,spectail; //para -h -t
+    extern bool inputfromscreen; //when use cmd,represent para -f
+    extern char head,tail;
     bool Compare(const std::string s1,const std::string s2);
 
     class CwordMatrix{
@@ -130,31 +132,38 @@ namespace wordList{
     std::vector<std::string> filter(std::string);
     void output();
     void outputspecWordList();
-    //void DFS_spechead(char);
-    //void DFS_specwordlens(int,char);
-
+    //new Functions for lab1-2
+    
+    int get_chain_word(char* words,std::vector<std::string> &result,char head,char tail);
+    int get_chain_char(char* words,std::vector<std::string> &result,char head,char tail);
+    int get_chain_spec(char* words,int n,std::vector<std::vector<std::string>> &result,char head,char tail);
+    
     void Find_WordList();
 
-    CwordMatrix wordMatrix;
+    extern CwordMatrix wordMatrix;
     typedef struct {
         char begin;
         char end;
     }wordSides;
-    std::vector<wordSides> maxWordList;
-    std::vector<wordSides> tempMaxWordList;
-    std::vector<std::vector<wordSides>> specWordLists;
-    std::vector<std::string> tempspecWordList;
-    int maxLength = 0;
-    int tempEstimatedMaxLength = 0;
-    int specLength = 0;
-    int recDeep = 0;
-    clock_t begin,end;
+    extern std::vector<wordSides> maxWordList;
+    extern std::vector<wordSides> tempMaxWordList;
+    extern std::vector<std::vector<wordSides>> specWordLists;
+    extern std::vector<std::string> tempspecWordList;
+    extern int maxLength;
+    extern int tempEstimatedMaxLength;
+    extern int specLength;
+    extern int recDeep;
+    extern clock_t begin,end;
+    //new variables for lab1-2
+    //vectors that save return value 
+    extern std::vector<std::string> maxWordList_api;
+    extern std::vector<std::vector<std::string>> specWordLists_api;
 
-    std::string result;
-    std::string FileName;
-    std::string inFileName = "../data/";
-    std::string outFileName = "../data/outFile.txt";
-    
+    extern std::string result;
+    extern std::string FileName;
+    extern std::string inFileName;
+    extern std::string outFileName;
     
     
 }
+#endif
