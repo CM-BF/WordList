@@ -8,6 +8,7 @@
 #include<time.h>
 #include<ctype.h>
 #include<unistd.h>
+using namespace std;
 
 #define LIMITED_MAX 1000000000
 

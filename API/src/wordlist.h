@@ -7,6 +7,7 @@
 #include<algorithm>
 #include<time.h>
 #include<unistd.h>
+using namespace std;
 
 #define LIMITED_MAX 1000000000
 
@@ -21,8 +22,11 @@ namespace wordList{
         std::vector<std::string> array;
     };
 
+    int  wc1_paranum = 0,h_paranum=0,t_paranum =0,n_paranum=0,f_paranum=0; 
+    std::string temp_head,temp_tail;
+    
+    extern int wc_paranum;
     extern bool WordLens;   //find the list with max words or max letters 
-    extern int  wc_paranum;     //para -w -c
     extern bool specWordLens;  // para -n
     extern bool spechead ,spectail; //para -h -t
     extern bool inputfromscreen; //when use cmd,represent para -f
@@ -136,7 +140,7 @@ namespace wordList{
     //new Functions for lab1-2
     extern "C"
     {
-    void text_process(char* filename,char* rawstr);
+    void text_process(char* filename, const char* rawstr);
     int get_chain_word(char* words,std::vector<std::string> &result,char head,char tail);
     int get_chain_char(char* words,std::vector<std::string> &result,char head,char tail);
     int get_chain_spec(char* words,int n,std::vector<std::vector<std::string>> &result,char head,char tail);
