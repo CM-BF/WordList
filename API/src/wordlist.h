@@ -140,10 +140,10 @@ namespace wordList{
     //new Functions for lab1-2
     extern "C"
     {
-    void text_process(char* filename, const char* rawstr);
-    int get_chain_word(char* words,std::vector<std::string> &result,char head,char tail);
-    int get_chain_char(char* words,std::vector<std::string> &result,char head,char tail);
-    int get_chain_spec(char* words,int n,std::vector<std::vector<std::string>> &result,char head,char tail);
+    void text_preprocess(char* filename, string &rawstr);
+    int get_chain_word(string &words,std::vector<std::string> &result,char head,char tail);
+    int get_chain_char(string &words,std::vector<std::string> &result,char head,char tail,bool specn=false,int n=0);
+    int get_chain_spec(string &words,int n,std::vector<std::vector<std::string>> &result,char head,char tail);
     }
     void Find_WordList();
 
@@ -160,6 +160,7 @@ namespace wordList{
     extern int tempEstimatedMaxLength;
     extern int specLength;
     extern int recDeep;
+    extern int wordnum;
     extern clock_t begin,end;
     //new variables for lab1-2
     //vectors that save return value 

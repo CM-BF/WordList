@@ -16,7 +16,7 @@ void outputMatrix(){
         }
         printf("\033[;31m%c\033[0m", i);
         for(char j='a'; j<='z'; j++){
-            auto count = wordList::wordMatrix.count(i, j);
+            auto count = wordMatrix.count(i, j);
             if(count != 0){
                 printf("\033[;31m%3d\033[0m", count);
             }else
@@ -29,6 +29,14 @@ void outputMatrix(){
 #define COUT(x) 
 void outputMatrix(){}
 #endif
+
+bool specWordLens = false;
+bool WordLens = true;   //find the wordlist with most word or most letters
+int wc1_paranum = 0,h_paranum = 0,t_paranum = 0,n_paranum = 0,f_paranum = 0;
+char head = 0,tail = 0;
+char *filename;
+int n;
+int maxletter;
 
 int StringtoNum(char *optarg)
 {
@@ -47,80 +55,94 @@ int StringtoNum(char *optarg)
     return num;
 }
 
+void Output(vector<string> &vec,string outfile)
+{
+    ofstream out(outfile);
+    if(WordLens) out << vec.size()<<endl;
+    else out << maxletter <<endl;
+    for(auto it = vec.begin();it != vec.end();it++){
+        out << *it << endl;
+    }
+    out.close();
+}
+
+void Outputspec(vector<vector<string>> &vec,string outfile)
+{
+    ofstream out(outfile);
+    out << vec.size()<<endl;
+    for(auto it1 = vec.begin();it1 != vec.end();it1++){
+        for(auto it2 = it1->begin(); it2 != it1->end();it2++)
+            out << *it2 << endl;
+        out << endl;
+    }
+    out.close();
+
+}
+
 void HandleException()
 {
     try{
-        if(wordList::wc1_paranum == 0 && !wordList::specWordLens){
+        if(wc1_paranum == 0 && !specWordLens){
             throw "-w or -c or -n must be chooesd ";
-            exit(0);
         }
 
-        if(wordList::wc1_paranum > 1||wordList::h_paranum > 1||wordList::t_paranum > 1
-            ||wordList::n_paranum > 1||wordList::f_paranum > 1){
+        if(wc1_paranum > 1||h_paranum > 1||t_paranum > 1
+            ||n_paranum > 1||f_paranum > 1){
             throw "The same parameter can occur only once";
-            exit(0);
         }
 
-        if(wordList::inputfromscreen){
-            throw "No file opened";
-            exit(0);
-        }
-        if(wordList::wc1_paranum == 1 && wordList::WordLens && wordList::specWordLens){
+        if(wc1_paranum == 1 && WordLens && specWordLens){
             throw "-w and -n cannot be choosed together";
-            exit(0);
         }
-        // if(wordList::specWordLens && wordList::specLength <2){
+        // if(specWordLens && specLength <2){
         //     std::cout << "Word length should >1" <<std::endl;
         //     exit(0);
         // }
-        if(wordList::spechead && (wordList::temp_head.size()!=1 || !isalpha(wordList::temp_head[0]))){
-            throw "The value of -h should be a character";
-            exit(0);
-        }
-        else if(wordList::spechead) wordList::head = char(wordList::temp_head[0]);
-        if(wordList::spectail && (wordList::temp_tail.size()!=1 || !isalpha(wordList::temp_tail[0]))){
-            throw "The value of -t should be a character";
-            exit(0);
-        }
-        else if(wordList::spectail) wordList::tail = char(wordList::temp_tail[0]);
+        // if(spechead && (temp_head.size()!=1 || !isalpha(temp_head[0]))){
+        //     throw "The value of -h should be a character";
+        //     exit(0);
+        // }
+        // else if(spechead) head = char(temp_head[0]);
+        // if(spectail && (temp_tail.size()!=1 || !isalpha(temp_tail[0]))){
+        //     throw "The value of -t should be a character";
+        //     exit(0);
+        // }
+        // else if(spectail) tail = char(temp_tail[0]);
     }catch(char const *s){
         cerr << s << endl;
+        exit(1);
     }
     
 }
 
 void cmdParametersParser(int argc, char **argv){
     int ch;
-
     while((ch=getopt(argc,argv,"wch:t:n:f:"))!=-1)
     {
         switch(ch)
         {
             case 'w':
-                    wordList::WordLens = true;
-                    wordList::wc1_paranum ++;
+                    WordLens = true;
+                    wc1_paranum ++;
                     break;
             case 'c':
-                    wordList::WordLens = false;
-                    wordList::wc1_paranum ++;
+                    WordLens = false;
+                    wc1_paranum ++;
                     break;
-            case 'h':wordList::temp_head = optarg;
-                    wordList::spechead = true;
-                    wordList::h_paranum ++;
-                    COUT(wordList::head);break;
-            case 't':wordList::temp_tail = optarg;
-                    wordList::spectail = true;
-                    wordList::t_paranum ++;
-                    COUT(wordList::tail);break;
-            case 'n':wordList::specWordLens = true;
-                    wordList::specLength = StringtoNum(optarg);
-                    wordList::n_paranum ++;
-                    COUT(wordList::specLength);
+            case 'h':head = *optarg;
+                    h_paranum ++;
+                    COUT(head);break;
+            case 't':tail = *optarg;
+                    t_paranum ++;
+                    COUT(tail);break;
+            case 'n':specWordLens = true;
+                    n = StringtoNum(optarg);
+                    n_paranum ++;
+                    COUT(n);
                     break;
-            case 'f':wordList::FileName = optarg;
-                    wordList::inputfromscreen = false;
-                    wordList::f_paranum ++;
-                    COUT(wordList::FileName);
+            case 'f':filename = optarg;
+                    f_paranum ++;
+                    COUT(FileName);
                     break;
             default:;
         }
@@ -129,6 +151,22 @@ void cmdParametersParser(int argc, char **argv){
 
 int main(int argc, char *argv[])
 {
+    string rawstr;
+    vector<string> result;
+    vector<vector<string>> result1;
+    string outFileName = "../data/solution.txt";
+
     cmdParametersParser(argc, argv);
+    HandleException();
+    wordList::text_preprocess(filename,rawstr);
+
+    //call the api according to the cmd arguments
+    if(specWordLens && WordLens) wordList::get_chain_spec(rawstr,n,result1,head,tail);
+    else if(specWordLens) maxletter = wordList::get_chain_char(rawstr,result,head,tail,true,n);
+    else if(WordLens) wordList::get_chain_word(rawstr,result,head,tail);
+    else maxletter = wordList::get_chain_char(rawstr,result,head,tail);
+    //output the result to specified file
+    if(specWordLens && WordLens) Outputspec(result1,outFileName);
+    else Output(result,outFileName);
     return 0;
 }

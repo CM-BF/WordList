@@ -49,6 +49,7 @@ int wordList::maxLength = 0;
 int wordList::tempEstimatedMaxLength = 0;
 int wordList::specLength = 0;
 int wordList::recDeep = 0;
+int wordList::wordnum = 0;
 clock_t wordList::begin,wordList::end;
     //new variables for lab1-2
     //vectors that save return value 
@@ -138,6 +139,7 @@ void wordList::loadingWords(){
                 auto s = *it;
                 if(Smap.count(s) == 0){
                     Smap[s] = 1;
+                    wordnum ++;
                     COUT(s);
                     wordMatrix.incCount(s);
                     wordMatrix.pushWord(s);
@@ -266,24 +268,17 @@ begin: it is decided by last layer(the end of last word)
 void wordList::output(){
     int count[26][26] = {0};
     COUT(maxLength);
-    result += to_string(maxLength) + '\n';
     for(auto it=maxWordList.begin(); it!=maxWordList.end(); it++){
         auto wordsides = *it;
         auto word = wordMatrix.popWord(wordsides.begin, wordsides.end);
         maxWordList_api.push_back(word);
         COUT(word);
-        result += word + '\n';
     }
     COUT("");
 }
 
 void output_print(int deep,std::vector<wordList::wordSides> tempwordList){
     if(deep == tempwordList.size()){
-        for(auto it=wordList::tempspecWordList.begin(); it!=wordList::tempspecWordList.end(); it++){
-            COUT(*it);
-            wordList::result += *it + '\n';
-        }
-        wordList::result += '\n';
         wordList::specWordLists_api.push_back(wordList::tempspecWordList);
         return;
     }
@@ -299,23 +294,10 @@ void output_print(int deep,std::vector<wordList::wordSides> tempwordList){
 }
 
 void wordList::outputspecWordList(){
-    int totalnum = 0;
-    int tempnum = 1;
-    for(auto it1 = specWordLists.begin();it1!=specWordLists.end();it1++){
-        auto onewordlist = *it1;
-        tempnum = 1;
-        for(auto it2 = onewordlist.begin();it2 != onewordlist.end();it2++){
-            auto wordsides = *it2;
-            tempnum *= wordMatrix.getsize(wordsides.begin,wordsides.end);
-        }
-        totalnum += tempnum;
-    }
-    COUT(totalnum);
-    result += to_string(totalnum) + '\n';
+   
     for(auto it1 = specWordLists.begin();it1!=specWordLists.end();it1++){
         output_print(0,*it1);
         COUT("");
-        result += '\n';
     }
 }
 
@@ -363,6 +345,7 @@ void Init()
     wordList::recDeep = 0;
     wordList::maxLength = 0;
     wordList::tempEstimatedMaxLength = 0;
+    wordList::wordnum = 0;
     wordList::maxWordList.clear();
     wordList::tempMaxWordList.clear();
     wordList::specWordLists.clear();
@@ -376,23 +359,36 @@ void Init()
 
 void wordList::HandleException()
 {
-    if(spechead && !isalpha(head)){
-        throw "";
+    try{
+        if(spechead && !isalpha(head)){
+            throw "The value of argument -h must be a letter";
+        }
+        if(spectail && !isalpha(tail)){
+            throw "The value of argument -t must be a letter";
+        }
+        if(wordnum == 0){
+            throw "There is no words in input file";
+        }
+        if(specWordLens && specLength < 2){
+            throw "The specified word length must >1";
+        }
+
     }
-    if(spectail && !isalpha(tail)){
-        throw "";
+    catch(const char* msg){
+        cerr << msg << endl;
+        exit(1);
     }
 }
 
 
-void wordList::text_process(char* filename,const char* rawstr)
+void wordList::text_preprocess(char* filename,string &rawstr)
 {   
     string s = "";
     string tempstr;
     ifstream inFile(filename);
     try{
         if(!inFile.is_open())
-        throw "File does not exist";
+        throw "File does not exist or no file choosed";
     }
     catch(const char* msg){
         cerr << msg <<endl;
@@ -400,13 +396,13 @@ void wordList::text_process(char* filename,const char* rawstr)
     }
     while(!inFile.eof()){
         inFile >> tempstr;
-        s += tempstr;
+        s += tempstr + " ";
     }
-    rawstr = s.c_str();
+    rawstr = s;
     inFile.close();
 }
 
-int wordList::get_chain_word(char* words,vector<string> &result,char head,char tail)
+int wordList::get_chain_word(string &words,vector<string> &result,char head,char tail)
 {
     inFileName = words;
     WordLens = true;
@@ -425,19 +421,26 @@ int wordList::get_chain_word(char* words,vector<string> &result,char head,char t
 
     Init();
     wordList::loadingWords();
+    HandleException();
     wordList::Find_WordList();
     wordList::output();
 
     for(auto it = maxWordList_api.begin();it != maxWordList_api.end();it++)
         result.push_back(*it);
+
+    if(result.size()< 2){//if the result contains only one word,it's not acceptable
+        result.clear();
+        maxLength = 0;
+    }
     return maxLength;
 }
 
-int wordList::get_chain_char(char* words,vector<string> &result,char head,char tail)
+int wordList::get_chain_char(string &words,vector<string> &result,char head,char tail,bool specn,int n)
 {
     inFileName = words;
     WordLens = false;
-    specWordLens = false;
+    specWordLens = specn;
+    specLength = n;
     inputfromscreen = true;
     if(head!='\0'){
         spechead = true;
@@ -449,18 +452,24 @@ int wordList::get_chain_char(char* words,vector<string> &result,char head,char t
         wordList::tail = tail;
     }
     else spectail = false;
-
+    cout << specn <<"   "<<n<<endl;
     Init();
     wordList::loadingWords();
+    HandleException();
     wordList::Find_WordList();
     wordList::output();
 
     for(auto it = maxWordList_api.begin();it != maxWordList_api.end();it++)
         result.push_back(*it);
+    if(result.size()< 2){//if the result contains only one word,it's not acceptable
+        result.clear();
+        maxLength = 0;
+    }
+    
     return maxLength;
 }
 
-int wordList::get_chain_spec(char* words,int n,vector<vector<string>> &result,char head,char tail)
+int wordList::get_chain_spec(string &words,int n,vector<vector<string>> &result,char head,char tail)
 {
     inFileName = words;
     WordLens = true;
@@ -480,6 +489,7 @@ int wordList::get_chain_spec(char* words,int n,vector<vector<string>> &result,ch
 
     Init();
     wordList::loadingWords();
+    HandleException();
     wordList::Find_WordList();
     wordList::outputspecWordList();
 
