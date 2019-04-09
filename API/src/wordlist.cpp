@@ -278,6 +278,7 @@ void wordList::output(){
 }
 
 void output_print(int deep,std::vector<wordList::wordSides> tempwordList){
+    if(wordList::specWordLists_api.size()>9999) return;
     if(deep == tempwordList.size()){
         wordList::specWordLists_api.push_back(wordList::tempspecWordList);
         return;
@@ -452,7 +453,6 @@ int wordList::get_chain_char(string &words,vector<string> &result,char head,char
         wordList::tail = tail;
     }
     else spectail = false;
-    cout << specn <<"   "<<n<<endl;
     Init();
     wordList::loadingWords();
     HandleException();
