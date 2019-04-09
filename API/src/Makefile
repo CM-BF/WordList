@@ -8,7 +8,7 @@ wordlist.o:wordlist.cpp wordlist.h
 	$(GCC) -c $< -o $@ -fprofile-arcs -ftest-coverage
 libwordlist.so:wordlist.o
 	$(CC) -o $@ wordlist.cpp -fprofile-arcs -ftest-coverage
-test_main.o:cmd.cpp
+test_main.o:test_main.cpp
 	$(GCC) -c $^ -o $@ -fprofile-arcs -ftest-coverage
 
 clean:
